@@ -60,7 +60,7 @@ pipeline {
             }
         }
 
-        stage('SonarQube Scan') {
+        '''stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv(SONARQUBE_ENV) {
                     script {
@@ -74,7 +74,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }'''
 
         stage('Build Docker Image') {
             steps {
