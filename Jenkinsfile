@@ -4,7 +4,7 @@ pipeline {
     environment {
 
         /* ========== APPLICATION REPO (CI) ========== */
-        APP_REPO_URL = 'https://github.com/Akash0902/DevOps.git'
+        APP_REPO_URL = 'https://github.com/abhilashkyasa/Python-Web-Application.git'
         APP_BRANCH  = 'main'
 
         /* ========== GITOPS REPO (CD) ========== */
