@@ -13,7 +13,7 @@ pipeline {
 
         /* ========== DOCKER / NEXUS ========== */
         NEXUS_CRED_ID = 'nexus'
-        NEXUS_REGISTRY = '3.108.66.213:8000'
+        NEXUS_REGISTRY = '16.16.216.41:8000'
         IMAGE_NAME = 'devops-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
