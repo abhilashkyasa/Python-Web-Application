@@ -11,10 +11,10 @@ pipeline {
         GITOPS_REPO_URL = 'git@github.com:Akash0902/devops-gitops.git'
         GITOPS_BRANCH  = 'main'
 
-        /* ========== SONARQUBE ========== */
-        SONARQUBE_ENV     = 'sonar'
-        SONAR_PROJECT_KEY = 'DevOps'
-        SONAR_SCANNER     = 'sonar'
+        /* ========== SONARQUBE (Disabled) ========== */
+        // SONARQUBE_ENV     = 'sonar'
+        // SONAR_PROJECT_KEY = 'DevOps'
+        // SONAR_SCANNER     = 'sonar'
 
         /* ========== DOCKER / NEXUS ========== */
         NEXUS_CRED_ID  = 'nexus'
@@ -60,7 +60,8 @@ pipeline {
             }
         }
 
-        '''stage('SonarQube Scan') {
+        /*
+        stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv(SONARQUBE_ENV) {
                     script {
@@ -74,7 +75,8 @@ pipeline {
                     }
                 }
             }
-        }'''
+        }
+        */
 
         stage('Build Docker Image') {
             steps {
@@ -104,7 +106,7 @@ pipeline {
             }
         }
 
-        /* ========== ✅ GITOPS PART (ONLY CD ACTION) ========== */
+        /* ========== GITOPS PART (ONLY CD ACTION) ========== */
 
         stage('Checkout GitOps Repo') {
             steps {
@@ -135,7 +137,9 @@ pipeline {
                 git config user.email "jenkins@gitops.com"
 
                 git add .
-                git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}"
+
+                git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || echo "No changes to commit"
+
                 git push origin ${GITOPS_BRANCH}
                 '''
             }
