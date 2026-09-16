@@ -1,0 +1,73 @@
+name: Build and Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: python-web-production
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: python-web-application
+  EKS_CLUSTER: python-web-eks
+  K8S_NAMESPACE: python-web
+  DEPLOYMENT_NAME: python-web-app
+  CONTAINER_NAME: python-web-app
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate Python syntax
+        run: python -m py_compile app.py
+
+      - name: Authenticate to AWS using OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::167341897161:role/python-web-github-actions-role
+          role-session-name: python-web-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        id: build-image
+        shell: bash
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER }}" --region "${{ env.AWS_REGION }}"
+
+      - name: Deploy image to EKS
+        run: |
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME } \
+            ${{ env.CONTAINER_NAME }}=${{ steps.build-image.outputs.image_uri }} \
+            --namespace ${{ env.K8S_NAMESPACE }}
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} \
+            --namespace ${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+      - name: Show deployed pods
+        run: kubectl get pods --namespace ${{ env.K8S_NAMESPACE }} -o wide
