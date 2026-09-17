@@ -37,7 +37,7 @@ jobs:
       - name: Authenticate to AWS using OIDC
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          role-to-assume: arn:aws:iam::167341897161:role/python-web-github-actions-role
+          role-to-assume: arn:aws:iam::167341897161:role/GitHubActions-EKS-Deploy-Role
           role-session-name: python-web-github-actions
           aws-region: ${{ env.AWS_REGION }}
 
