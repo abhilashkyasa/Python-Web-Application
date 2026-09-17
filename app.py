@@ -66,7 +66,8 @@ def load_json(name):
 # ---------- Routes ----------
 @app.route("/")
 def home():
-    raise Exception("Production application error")
+    topics = load_json("topics.json")
+    return render_template("index.html", topics=topics)
 
 
 @app.route("/topics")
